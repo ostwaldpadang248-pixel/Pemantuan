@@ -1,1 +1,432 @@
-# Pemantuan
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>Resources ID • Portal Maintenance Harian</title>
+  <!-- Tailwind via CDN + Lucide Icons & polyfill untuk React di browser -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.14/dist/tailwind.min.css" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- React & ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <!-- Babel standalone untuk JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body {
+      background-color: #0f172a;
+      margin: 0;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+    @media print {
+      body { background: white; }
+      .print-hidden { display: none; }
+      #print-area { box-shadow: none; border: none; background: white; color: black; }
+    }
+    .animate-slideIn {
+      animation: slideIn 0.3s ease-out;
+    }
+    @keyframes slideIn {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .animate-fadeIn {
+      animation: fadeIn 0.25s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0.6; }
+      to { opacity: 1; }
+    }
+    input, select, button {
+      font-family: inherit;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // Mapping komponen ikon lucide agar bisa digunakan dalam JSX
+    const Icon = ({ name, className, size }) => {
+      const LucideIcon = window.lucide[name];
+      if (!LucideIcon) return null;
+      return <LucideIcon className={className} size={size} />;
+    };
+
+    // Daftar ikon yang digunakan
+    const Icons = {
+      Clock: (props) => <Icon name="Clock" {...props} />,
+      AlertTriangle: (props) => <Icon name="AlertTriangle" {...props} />,
+      Users: (props) => <Icon name="Users" {...props} />,
+      Plus: (props) => <Icon name="Plus" {...props} />,
+      Trash2: (props) => <Icon name="Trash2" {...props} />,
+      Printer: (props) => <Icon name="Printer" {...props} />,
+      Camera: (props) => <Icon name="Camera" {...props} />,
+      Check: (props) => <Icon name="Check" {...props} />,
+      Settings: (props) => <Icon name="Settings" {...props} />,
+      Grid: (props) => <Icon name="Grid" {...props} />,
+      FileSpreadsheet: (props) => <Icon name="FileSpreadsheet" {...props} />,
+      HardHat: (props) => <Icon name="HardHat" {...props} />,
+      Shield: (props) => <Icon name="Shield" {...props} />,
+      UserCheck: (props) => <Icon name="UserCheck" {...props} />,
+      MapPin: (props) => <Icon name="MapPin" {...props} />,
+      Truck: (props) => <Icon name="Truck" {...props} />,
+      Activity: (props) => <Icon name="Activity" {...props} />,
+      Info: (props) => <Icon name="Info" {...props} />,
+      Layers: (props) => <Icon name="Layers" {...props} />,
+      ImageIcon: (props) => <Icon name="Image" {...props} />,
+      Download: (props) => <Icon name="Download" {...props} />,
+      FileText: (props) => <Icon name="FileText" {...props} />,
+      ChevronRight: (props) => <Icon name="ChevronRight" {...props} />,
+      Map: (props) => <Icon name="Map" {...props} />,
+      X: (props) => <Icon name="X" {...props} />,
+      AlertCircle: (props) => <Icon name="AlertCircle" {...props} />,
+      Maximize2: (props) => <Icon name="Maximize2" {...props} />,
+      Upload: (props) => <Icon name="Upload" {...props} />,
+    };
+
+    function App() {
+      // --- STATE UTAMA ---
+      const [headerData, setHeaderData] = useState({
+        title: "DAILY ACTIVITY MAINTENANCE RESOURCES ID",
+        date: "2026-05-31",
+        shift: "Day",
+        lostTimeStart: "08:00",
+        lostTimeEnd: "13:00",
+        lostTimeReason: "Jalan Licin"
+      });
+
+      const [logoImage, setLogoImage] = useState("image_98f180.png");
+
+      const defaultImages = {
+        vr: "https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b?auto=format&fit=crop&q=80&w=400",
+        bd: "https://images.unsplash.com/photo-1579684389782-64d84b5e9053?auto=format&fit=crop&q=80&w=400",
+        dt: "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=400",
+        dt530: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&q=80&w=400",
+        pc: "https://images.unsplash.com/photo-1558981403-c5f9899a28bc?auto=format&fit=crop&q=80&w=400",
+        pc391: "https://images.unsplash.com/photo-1541625602330-2277a4c46182?auto=format&fit=crop&q=80&w=400",
+        pc392: "https://images.unsplash.com/photo-1581094288338-2314dddb7ecc?auto=format&fit=crop&q=80&w=400",
+        gr: "https://images.unsplash.com/photo-1533929736458-ca588eb77465?auto=format&fit=crop&q=80&w=400",
+        wt: "https://images.unsplash.com/photo-1599740831464-54c478683ccb?auto=format&fit=crop&q=80&w=400"
+      };
+
+      const PREDEFINED_UNITS = [
+        { code: 'VR 020', label: 'VR 020 (Vibro)', category: 'VR', defaultJob: 'Compacting untuk Laminating', image: defaultImages.vr },
+        { code: 'BD 013', label: 'BD 013 (Bulldozer)', category: 'BD', defaultJob: 'Scraping dan Widening', image: defaultImages.bd },
+        { code: 'DT B530', label: 'DT B530 (Dump Truck)', category: 'DT', defaultJob: 'Dumpingan', image: defaultImages.dt530 },
+        { code: 'DT A20', label: 'DT A20 (Dump Truck)', category: 'DT', defaultJob: 'Dumpingan', image: defaultImages.dt },
+        { code: 'WT 014', label: 'WT 014 (Water Truck)', category: 'WT', defaultJob: 'Untuk Watering', image: defaultImages.wt },
+        { code: 'WT 019', label: 'WT 019 (Water Truck)', category: 'WT', defaultJob: 'Untuk Watering', image: defaultImages.wt },
+        { code: 'PC 390', label: 'PC 390 (Excavator)', category: 'PC', defaultJob: 'Drainase dan Loading Material', image: defaultImages.pc },
+        { code: 'PC 392', label: 'PC 392 (Excavator)', category: 'PC', defaultJob: 'Drainase dan Loading Material', image: defaultImages.pc392 },
+        { code: 'PC 391', label: 'PC 391 (Breaker)', category: 'PC', defaultJob: 'Breaker Quarry', image: defaultImages.pc391 },
+        { code: 'GR 020', label: 'GR 020 (Grader)', category: 'GR', defaultJob: 'Scraping, Laminating dan Drainase', image: defaultImages.gr }
+      ];
+
+      const ZONES = Array.from({ length: 14 }, (_, i) => `Z${i + 1}`);
+
+      const AREAS = [
+        { 
+          code: 'A', name: 'AREA 4.2', description: 'Main Mining & Hauling Zone',
+          themeColor: 'emerald', textColor: 'text-emerald-400 border-emerald-500/30 bg-emerald-950/40',
+          badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+        },
+        { 
+          code: 'B', name: 'PT BNN', description: 'BNN Corporate Block Area',
+          themeColor: 'sky', textColor: 'text-sky-400 border-sky-500/30 bg-sky-950/40',
+          badgeColor: 'bg-sky-500/10 text-sky-400 border-sky-500/20'
+        },
+        { 
+          code: 'C', name: 'MHR 2.7', description: 'Secondary Haul Road & Buffer Zone',
+          themeColor: 'indigo', textColor: 'text-indigo-400 border-indigo-500/30 bg-indigo-950/40',
+          badgeColor: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20'
+        }
+      ];
+
+      const [equipmentList, setEquipmentList] = useState([
+        { id: 'eq1', area: 'A', unitCode: 'VR 020', type: 'VR', pekerjaan: 'Compacting untuk Laminating', description: 'Compacting Z1', zones: ['Z1'], image: defaultImages.vr },
+        { id: 'eq2', area: 'A', unitCode: 'BD 013', type: 'BD', pekerjaan: 'Scraping dan Widening', description: 'Scraping Z1 dan Laminating Z3', zones: ['Z1', 'Z3'], image: defaultImages.bd },
+        { id: 'eq3', area: 'A', unitCode: 'VR 020', type: 'VR', pekerjaan: 'Compacting untuk Laminating', description: 'Compacting Z6', zones: ['Z6'], image: defaultImages.vr },
+        { id: 'eq4', area: 'A', unitCode: 'DT B530', type: 'DT', pekerjaan: 'Dumpingan', description: 'Dumping Material Z3', zones: ['Z3'], image: defaultImages.dt530 },
+        { id: 'eq5', area: 'A', unitCode: 'DT A20', type: 'DT', pekerjaan: 'Dumpingan', description: 'Dumping Material Z3', zones: ['Z3'], image: defaultImages.dt },
+        { id: 'eq6', area: 'A', unitCode: 'WT 014', type: 'WT', pekerjaan: 'Untuk Watering', description: 'Watering Z3', zones: ['Z3'], image: defaultImages.wt },
+        { id: 'eq7', area: 'A', unitCode: 'WT 019', type: 'WT', pekerjaan: 'Untuk Watering', description: 'Watering Z3', zones: ['Z3'], image: defaultImages.wt },
+        { id: 'eq8', area: 'A', unitCode: 'PC 390', type: 'PC', pekerjaan: 'Drainase dan Loading Material', description: 'Drainase Z(7)', zones: ['Z7'], image: defaultImages.pc },
+        { id: 'eq9', area: 'B', unitCode: 'PC 392', type: 'PC', pekerjaan: 'Drainase dan Loading Material', description: 'Loading Material', zones: ['Z9'], image: defaultImages.pc392 },
+        { id: 'eq10', area: 'B', unitCode: 'PC 391', type: 'PC', pekerjaan: 'Breaker Quarry', description: 'Breaker Quarry', zones: ['Z10'], image: defaultImages.pc391 }
+      ]);
+
+      const [breakdownList, setBreakdownList] = useState([
+        { id: 'bd1', unitCode: 'DT B226', type: 'DT', status: 'Breakdown', note: 'Engine Overheat / Hydr. Leak', image: defaultImages.dt }
+      ]);
+
+      const [manpower, setManpower] = useState({ foreman: 3, hses: 2, checker: 2 });
+      const [notification, setNotification] = useState(null);
+      const [isExporting, setIsExporting] = useState(false);
+      const [activeTab, setActiveTab] = useState('input');
+      const [inputAreaFilter, setInputAreaFilter] = useState('A');
+
+      const showToast = (message, type = 'success') => {
+        setNotification({ message, type });
+        setTimeout(() => setNotification(null), 4000);
+      };
+
+      const loadScript = (src) => {
+        return new Promise((resolve, reject) => {
+          if (document.querySelector(`script[src="${src}"]`)) {
+            resolve();
+            return;
+          }
+          const script = document.createElement('script');
+          script.src = src;
+          script.onload = resolve;
+          script.onerror = reject;
+          document.head.appendChild(script);
+        });
+      };
+
+      const handleLogoUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            setLogoImage(reader.result);
+            showToast("Logo Resources ID Berhasil diperbarui!", "success");
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+
+      const handleImageUpload = (id, listType, e) => {
+        const file = e.target.files[0];
+        if (file) {
+          if (file.size > 5 * 1024 * 1024) {
+            showToast("Ukuran gambar terlalu besar. Batas maksimal adalah 5MB.", "error");
+            return;
+          }
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            if (listType === 'equipment') {
+              setEquipmentList(prev => prev.map(item => item.id === id ? { ...item, image: reader.result } : item));
+            } else if (listType === 'breakdown') {
+              setBreakdownList(prev => prev.map(item => item.id === id ? { ...item, image: reader.result } : item));
+            }
+            showToast(`Gambar unit lapangan berhasil diperbarui!`, 'success');
+          };
+          reader.readAsDataURL(file);
+        }
+      };
+
+      const handleAddEquipment = (areaCode) => {
+        const newId = 'eq-' + Date.now();
+        const defaultUnit = PREDEFINED_UNITS[0];
+        const newUnit = {
+          id: newId, area: areaCode, unitCode: defaultUnit.code, type: defaultUnit.category,
+          pekerjaan: defaultUnit.defaultJob, description: '', zones: [], image: defaultUnit.image
+        };
+        setEquipmentList(prev => [...prev, newUnit]);
+        showToast(`Unit baru ditambahkan ke Area ${areaCode === 'A' ? '4.2' : areaCode === 'B' ? 'PT BNN' : 'MHR 2.7'}`, 'success');
+      };
+
+      const handleUnitCodeChange = (id, codeValue) => {
+        const matchedUnit = PREDEFINED_UNITS.find(u => u.code === codeValue);
+        setEquipmentList(prev => prev.map(item => {
+          if (item.id === id) {
+            return matchedUnit ? {
+              ...item, unitCode: matchedUnit.code, type: matchedUnit.category,
+              pekerjaan: matchedUnit.defaultJob, image: matchedUnit.image
+            } : { ...item, unitCode: codeValue };
+          }
+          return item;
+        }));
+      };
+
+      const handleUpdateEquipment = (id, field, value) => {
+        setEquipmentList(prev => prev.map(item => item.id === id ? { ...item, [field]: value } : item));
+      };
+
+      const handleToggleZone = (id, zone) => {
+        setEquipmentList(prev => prev.map(item => {
+          if (item.id === id) {
+            const currentZones = item.zones || [];
+            const updatedZones = currentZones.includes(zone) ? currentZones.filter(z => z !== zone) : [...currentZones, zone];
+            return { ...item, zones: updatedZones };
+          }
+          return item;
+        }));
+      };
+
+      const handleDeleteEquipment = (id) => {
+        setEquipmentList(prev => prev.filter(item => item.id !== id));
+        showToast("Unit berhasil dihapus.", "info");
+      };
+
+      const handleAddBreakdown = () => {
+        const newId = 'bd-' + Date.now();
+        setBreakdownList(prev => [...prev, {
+          id: newId, unitCode: 'DT B226', type: 'DT', status: 'Breakdown',
+          note: 'Engine Overheat / Hydr. Leak', image: defaultImages.dt
+        }]);
+        showToast("Unit breakdown berhasil ditambahkan.", "success");
+      };
+
+      const handleUpdateBreakdown = (id, field, value) => {
+        setBreakdownList(prev => prev.map(item => item.id === id ? { ...item, [field]: value } : item));
+      };
+
+      const handleDeleteBreakdown = (id) => {
+        setBreakdownList(prev => prev.filter(item => item.id !== id));
+        showToast("Unit breakdown dihapus.", "info");
+      };
+
+      const formatDateIndo = (dateStr) => {
+        if (!dateStr) return '';
+        const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+        const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+        try {
+          const date = new Date(dateStr);
+          const dayName = days[date.getDay()];
+          const day = date.getDate();
+          const month = months[date.getMonth()];
+          const year = date.getFullYear();
+          return `${dayName}, ${day} ${month} ${year}`;
+        } catch { return dateStr; }
+      };
+
+      const getUnitsInZone = (zoneCode) => equipmentList.filter(eq => eq.zones && eq.zones.includes(zoneCode));
+
+      const exportToExcel = () => {
+        showToast("Mempersiapkan spreadsheet Excel terformat...", "info");
+        let htmlString = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><style>body{font-family:'Segoe UI',Tahoma;}.title-header{font-size:16pt;font-weight:bold;color:#1e3a8a;text-align:center;}.sub-header{font-size:10pt;color:#4b5563;text-align:center;}.meta-table{border:none;margin-bottom:20px;}.meta-label{font-weight:bold;color:#374151;width:150px;}.table-main{border-collapse:collapse;width:100%;margin-top:15px;}.table-main th{background-color:#1e293b;color:#fff;border:1px solid #475569;padding:10px;font-size:10pt;}.table-main td{border:1px solid #cbd5e1;padding:8px;font-size:9.5pt;}.area-a-title{background-color:#047857!important;color:#fff!important;font-weight:bold;}.area-b-title{background-color:#0369a1!important;color:#fff!important;}.area-c-title{background-color:#4338ca!important;color:#fff!important;}.breakdown-title{background-color:#b91c1c!important;color:#fff!important;}.manpower-title{background-color:#0f172a!important;color:#fff!important;}</style></head><body><table><tr><td colspan="5" class="title-header">${headerData.title}</td></tr><tr><td colspan="5" class="sub-header">RESOURCES ID DAILY WORK ACTIVITY LOG</td></tr></table><table class="meta-table"><tr><td class="meta-label">Tanggal:</td><td>${formatDateIndo(headerData.date)}</td><td></td><td class="meta-label">Shift:</td><td><b>${headerData.shift}</b></td></tr><tr><td class="meta-label">Lost Time Mulai:</td><td>${headerData.lostTimeStart||'-'}</td><td></td><td class="meta-label">Selesai:</td><td>${headerData.lostTimeEnd||'-'}</td></tr><tr><td class="meta-label">Alasan:</td><td colspan="4"><b style="color:#b91c1c;">${headerData.lostTimeReason||'Nihil'}</b></td></tr></table>`;
+        
+        AREAS.forEach(ar => {
+          const list = equipmentList.filter(e => e.area === ar.code);
+          const styleClass = ar.code === 'A' ? 'area-a-title' : ar.code === 'B' ? 'area-b-title' : 'area-c-title';
+          htmlString += `<table class="table-main"><thead><tr><th colspan="5" class="${styleClass}">${ar.name} - LOG OPERASI AKTIF</th></tr><tr><th>No</th><th>Kode Unit</th><th>Tugas Utama</th><th>Zona</th><th>Keterangan</th></tr></thead><tbody>`;
+          if(list.length===0) htmlString += `<tr><td colspan="5" style="text-align:center;color:#64748b;">Tidak ada aktivitas</td></tr>`;
+          else list.forEach((item,idx) => htmlString += `<tr><td style="text-align:center;">${idx+1}</td><td><b>${item.unitCode}</b></td><td>${item.pekerjaan||'-'}</td><td style="text-align:center;color:#1d4ed8;"><b>${(item.zones||[]).join(", ")||'-'}</b></td><td>${item.description||'-'}</td></tr>`);
+          htmlString += `</tbody></table><br/>`;
+        });
+
+        htmlString += `<table class="table-main"><thead><tr><th colspan="4" class="breakdown-title">UNIT BREAKDOWN / STANDBY</th></tr><tr><th>No</th><th>Kode Unit</th><th>Status</th><th>Keterangan</th></tr></thead><tbody>`;
+        if(breakdownList.length===0) htmlString += `<tr><td colspan="4" style="text-align:center;color:#047857;">Nihil Breakdown</td></tr>`;
+        else breakdownList.forEach((item,idx) => htmlString += `<tr><td style="text-align:center;">${idx+1}</td><td style="color:#b91c1c;"><b>${item.unitCode}</b></td><td style="color:#b91c1c;background:#fef2f2;text-align:center;"><b>BREAKDOWN</b></td><td>${item.note||'-'}</td></tr>`);
+        htmlString += `</tbody></table><br/>`;
+
+        htmlString += `<table class="table-main"><thead><tr><th colspan="3" class="manpower-title">REKAPITULASI MANPOWER</th></tr><tr><th>No</th><th>Jabatan</th><th>Jumlah</th></tr></thead><tbody><tr><td style="text-align:center;">1</td><td>Foreman</td><td style="text-align:center;"><b>${manpower.foreman} Orang</b></td></tr><tr><td style="text-align:center;">2</td><td>HSES</td><td style="text-align:center;"><b>${manpower.hses} Orang</b></td></tr><tr><td style="text-align:center;">3</td><td>Checker</td><td style="text-align:center;"><b>${manpower.checker} Orang</b></td></tr><tr style="background:#f1f5f9;"><td colspan="2" style="text-align:right;font-weight:bold;">TOTAL</td><td style="text-align:center;color:#047857;font-weight:bold;">${manpower.foreman+manpower.hses+manpower.checker} Orang</td></tr></tbody></table></body></html>`;
+
+        const blob = new Blob([htmlString], { type: "application/vnd.ms-excel;charset=utf-8;" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `Laporan_ResourcesID_${headerData.date}.xls`;
+        link.click();
+        showToast("File Excel berhasil diekspor!", "success");
+      };
+
+      const handleExportPNG = async () => {
+        setIsExporting(true);
+        showToast("Memproses gambar PNG...", "info");
+        try {
+          await loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js");
+          const element = document.getElementById("print-area");
+          const canvas = await window.html2canvas(element, { useCORS: true, allowTaint: true, scale: 2, backgroundColor: "#0f172a", logging: false });
+          const link = document.createElement("a");
+          link.download = `RESOURCES_ID_Dashboard_${headerData.date}.png`;
+          link.href = canvas.toDataURL("image/png");
+          link.click();
+          showToast("Gambar PNG berhasil diunduh!", "success");
+        } catch (error) {
+          showToast("Gagal mengekstrak Gambar.", "error");
+        } finally {
+          setIsExporting(false);
+        }
+      };
+
+      const handleExportPDF = async () => {
+        setIsExporting(true);
+        showToast("Menyusun PDF...", "info");
+        try {
+          await loadScript("https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js");
+          await loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js");
+          const element = document.getElementById("print-area");
+          const canvas = await window.html2canvas(element, { useCORS: true, allowTaint: true, scale: 2, backgroundColor: "#0f172a", logging: false });
+          const imgData = canvas.toDataURL("image/png");
+          const { jsPDF } = window.jspdf;
+          const pdf = new jsPDF("l", "mm", "a4");
+          const imgWidth = 297;
+          const pageHeight = 210;
+          const imgHeight = (canvas.height * imgWidth) / canvas.width;
+          let heightLeft = imgHeight;
+          let position = 0;
+          if (heightLeft <= pageHeight) pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+          else {
+            while (heightLeft > 0) {
+              pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+              heightLeft -= pageHeight;
+              position -= pageHeight;
+              if (heightLeft > 0) pdf.addPage();
+            }
+          }
+          pdf.save(`ResourcesID_Laporan_${headerData.date}.pdf`);
+          showToast("PDF berhasil diunduh!", "success");
+        } catch (error) {
+          showToast("Gagal membuat PDF.", "error");
+        } finally {
+          setIsExporting(false);
+        }
+      };
+
+      const handlePrint = () => window.print();
+
+      return (
+        <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans selection:bg-blue-550 selection:text-white pb-12">
+          {notification && (
+            <div className="fixed bottom-5 right-5 z-50 bg-slate-950 border border-slate-700 text-white px-5 py-3.5 rounded-xl shadow-2xl flex items-center gap-3 animate-slideIn">
+              <span className={`w-3 h-3 rounded-full ${notification.type === 'success' ? 'bg-emerald-500' : notification.type === 'info' ? 'bg-blue-500' : 'bg-red-500'}`}></span>
+              <p className="text-sm font-bold">{notification.message}</p>
+            </div>
+          )}
+
+          <header className="bg-slate-950 border-b border-slate-800 px-6 py-4 flex flex-wrap justify-between items-center sticky top-0 z-40 shadow-lg print:hidden">
+            <div className="flex items-center space-x-3 mb-2 sm:mb-0">
+              <div className="bg-slate-900 p-1.5 rounded-xl shadow-inner flex items-center justify-center border border-slate-800">
+                <img src={logoImage} alt="RESOURCES ID LOGO" className="h-10 object-contain px-2 py-0.5" />
+              </div>
+              <div>
+                <h1 className="text-lg font-black tracking-wider text-white flex items-center">
+                  RESOURCES ID <span className="ml-2 text-[10px] bg-emerald-600/15 text-emerald-400 border border-emerald-500/30 px-2.5 py-0.5 rounded-full font-bold uppercase tracking-widest">Portal Maintenance</span>
+                </h1>
+                <p className="text-xs text-slate-400">Dashboard Pengelolaan & Dokumentasi Lapangan</p>
+              </div>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <button onClick={() => setActiveTab('input')} className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 ${activeTab === 'input' ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700'}`}><Icons.Settings className="h-4 w-4"/>1. Pengaturan</button>
+              <button onClick={() => setActiveTab('dashboard')} className={`px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center gap-2 ${activeTab === 'dashboard' ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-800/80 text-slate-300 hover:bg-slate-700'}`}><Icons.Grid className="h-4 w-4"/>2. Dashboard</button>
+              <span className="w-px h-6 bg-slate-800 mx-2 hidden md:inline"></span>
+              <button onClick={exportToExcel} className="p-2.5 bg-emerald-650 hover:bg-emerald-600 text-white rounded-xl transition-all flex items-center gap-1.5 text-xs font-bold"><Icons.FileSpreadsheet className="h-4 w-4"/><span className="hidden lg:inline">Excel</span></button>
+              <button onClick={handleExportPNG} disabled={isExporting} className="p-2.5 bg-amber-600 text-white rounded-xl hover:bg-amber-500 transition-colors flex items-center gap-1.5 text-xs font-bold disabled:opacity-50"><Icons.ImageIcon className="h-4 w-4"/><span className="hidden lg:inline">PNG</span></button>
+              <button onClick={handleExportPDF} disabled={isExporting} className="p-2.5 bg-red-650 hover:bg-red-700 text-white rounded-xl transition-colors flex items-center gap-1.5 text-xs font-bold disabled:opacity-50"><Icons.FileText className="h-4 w-4"/><span className="hidden lg:inline">PDF</span></button>
+              <button onClick={handlePrint} className="p-2.5 bg-slate-750 text-white rounded-xl hover:bg-slate-700 transition-colors flex items-center gap-1.5 text-xs font-bold"><Icons.Printer className="h-4 w-4"/><span className="hidden lg:inline">Cetak</span></button>
+            </div>
+          </header>
+
+          <main className="flex-1 p-4 md:p-6 max-w-7xl w-full mx-auto grid grid-cols-1 gap-6">
+            {activeTab === 'input' && (
+              <div className="space-y-6 animate-fadeIn print:hidden">
+                <div className="bg-slate-950 border border-blue-500/20 rounded-2xl p-4 flex items-start gap-3.5 shadow-md">
+                  <div className="bg-blue-500/10 p-2.5 rounded-xl text-blue-400"><Icons.Info className="h-5 w-5"/></div>
+                  <div><h4 className="font-bold text-white text-sm">Konfigurasi Manual RESOURCES ID</h4><p className="text-xs text-slate-400 mt-1">Unggah logo, ganti metadata harian, dan atur aktivitas alat per area.</p></div>
+                </div>
+
+                <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-6">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-3 gap-4">
+                    <h2 className="text-lg font-black tracking-wider text-white flex items-center gap-2"><Icons.Layers className="text-blue-500"/>A. HEADER & LOGO</h2>
+                    <div className="flex items-center gap-4 bg-slate-900/80 p-2.5 rounded-xl border border-slate-800 w-full sm:w-auto">
+                      <div className="w-20 h-10 bg-slate-950 rounded-lg overflow-hidden flex items-center justify-center border border-slate-700"><img src={logoImage} alt="Preview" className="object-contain max-h-full max-w-full p-1"/></div>
+                      <div><span className="block text-[10px] font-bold text-slate-400 uppercase">Logo Resources ID</span><label className="mt-1 cursor-pointer bg-blue-650 hover:bg-blue-600 text-white px-2.5 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1"><Icons.Upload className="h-3 w-3"/>Ganti Logo<input type="file" accept="image/*" onChange={handleLogoUpload} className="hidden"/></label></div>
+                    </div>
+                  </div
